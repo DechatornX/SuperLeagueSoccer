@@ -1,0 +1,93 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local a = require(game:GetService("ReplicatedStorage").Packages.Knit)
+
+local function ShootActivated()
+    if character and character:FindFirstChild("Ball") and character.Ball:FindFirstChild("Texture") then
+        return true 
+    end
+    return false 
+end
+
+local function getPlayerTeam()
+    if player.Team then
+        return player.Team.Name 
+    end
+    return nil
+end
+
+local function PerformShotAction()
+    if not ShootActivated() then
+        return 
+    end
+
+    local teamName = getPlayerTeam() 
+
+    if teamName == "Home" then
+
+        local args = {
+            [1] = "ShotActivated",
+            [2] = workspace:WaitForChild("Junk"):WaitForChild("Football"),
+            [3] = CFrame.new(0.411929607, 7.32105732, 188.151672, -1, 0, 0, 0, 0.406715453, 0.913554907, 0, 0.913554907, -0.406715393),
+            [4] = game.Players.LocalPlayer.Character.RightLowerLeg.Position
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ActionService"):WaitForChild("RE"):WaitForChild("PerformAction"):FireServer(unpack(args))
+
+    elseif teamName == "Away" then
+
+        local args = {
+            [1] = "ShotActivated",
+            [2] = workspace:WaitForChild("Junk"):WaitForChild("Football"),
+            [3] = CFrame.new(0.411929607, 7.32105732, 188.151672, -1, 0, 0, 0, 0.406715453, 0.913554907, 0, 0.913554907, -0.406715393),
+            [4] = game.Players.LocalPlayer.Character.RightLowerLeg.Position
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ActionService"):WaitForChild("RE"):WaitForChild("PerformAction"):FireServer(unpack(args))
+    end
+end
+local function updatePlayerHitboxes()
+    local hitbox = character:FindFirstChild("Hitbox")
+
+    if hitbox then
+        hitbox.Size = Vector3.new(10000,10000,10000)
+    end
+end
+
+local function updateOpponentHitbox()
+    local teamName = getPlayerTeam()
+    local opponentTeam = nil
+
+    if teamName == "Away" then
+        opponentTeam = workspace.Stadium.Teams.Home
+    elseif teamName == "Home" then
+        opponentTeam = workspace.Stadium.Teams.Away
+    end
+
+    if opponentTeam then
+        local opponentHitbox = opponentTeam.Goal.Hitbox
+        local opponentCollision = opponentTeam.Goal.Collision.Center
+
+        opponentHitbox.Size = Vector3.new(10000,10000,10000)
+        game.Players.LocalPlayer.Character.Ball.CFrame = opponentCollision.CFrame
+    end
+end
+
+workspace.Junk.Football.Size = Vector3.new(0,-100,0)
+
+task.spawn(function() 
+while task.wait() do
+game.Players.LocalPlayer.Character.RightLowerLeg.CFrame = workspace.Junk.Football.CFrame
+    end
+end)
+
+
+task.spawn(function()
+    while task.wait() do
+        a.SharedInterfaceStates.Stamina.Amount:set(math.huge)
+    end
+end)
+
+updatePlayerHitboxes()
+updateOpponentHitbox()
+PerformShotAction()
